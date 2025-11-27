@@ -1,0 +1,32 @@
+@import './base.css';
+
+#app {
+  max-width: 1280px;
+  min-height: 700px;
+  margin: 2rem auto;
+  padding: 2rem;
+  font-weight: normal;
+  font-family: 'Inter', Avenir, Helvetica, Arial, sans-serif;
+  background-color: hsla(0, 0%, 96.5%, 1);
+  border-radius: 30px;
+}
+
+a,
+.green {
+  text-decoration: none;
+  color: hsla(155, 46%, 20%, 1);
+  transition: 0.4s;
+  padding: 3px;
+}
+
+@media (hover: hover) {
+  a:hover {
+   
+  }
+}
+html, body {
+  height: 100%;
+  margin: 0; 
+  padding: 0;
+}
+
