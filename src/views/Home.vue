@@ -107,7 +107,7 @@ const stats = [
           <div class="relative">
             <div class="absolute inset-0 bg-gradient-to-br from-[#1C4E3D]/10 to-[#B7D9E4]/30 rounded-3xl blur-3xl"></div>
             <img 
-              src="/src/assets/images/waste.png" 
+              src="/src/assets/images/waste_dataset.png" 
               alt="Analyse de déchets"
               class="relative w-full h-auto rounded-2xl shadow-2xl hover:scale-105 transition-transform duration-500"
             />
