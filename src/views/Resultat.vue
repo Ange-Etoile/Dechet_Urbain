@@ -15,7 +15,7 @@ import {
 </script>
 
 <template>
-  <div class="w-full min-h-screen h-auto flex flex-col gap-12 sm:gap-16 lg:gap-24 p-3 sm:p-4 lg:p-6">
+  <div class="w-full min-h-screen h-auto flex flex-col gap-12 sm:gap-16 lg:gap-24 p-2 sm:p-4 lg:p-6">
     <!-- Header -->
     <Header />
     

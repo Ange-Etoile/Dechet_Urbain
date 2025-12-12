@@ -55,7 +55,7 @@ const stats = [
   <div class="w-full min-h-screen flex flex-col">
     <Header />
     
-    <main class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-1">
+    <main class="w-full max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 flex-1">
       <!-- Hero Section -->
       <section class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 py-12 sm:py-16 lg:py-24 items-center">
         <!-- Contenu Texte -->
@@ -182,7 +182,7 @@ const stats = [
 
     <!-- Footer -->
     <footer class="w-auto bg-white rounded-lg border-2 border-[#1C4E3D] py-8 mt-16">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 text-center">
         <p class="text-[#2a6b56]">© 2025 Waste Recycling. Tous droits réservés.</p>
       </div>
     </footer>
