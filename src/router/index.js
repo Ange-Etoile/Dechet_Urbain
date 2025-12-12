@@ -10,14 +10,14 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView
+      component: HomeView,
+      meta: { title: 'Accueil' }
     },
     {
-        // L'URL d'accès
       path: '/resultats', 
-      // Le nom de la route
       name: 'resultats',  
-      component: ResultatsAnalyse 
+      component: ResultatsAnalyse,
+      meta: {title: 'Resultats'}
     }
   ]
 })
