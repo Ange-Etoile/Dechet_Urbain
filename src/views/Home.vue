@@ -170,7 +170,7 @@ const stats = [
             </p>
             <button
               @click="started"
-              class="group inline-flex items-center gap-3 px-1 py-2 sm:px-10 sm:py-5 bg-white text-[#1C4E3D] rounded-full font-bold text-lg hover:bg-gray-100 transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105"
+              class="group inline-flex items-center gap-3 px-1 py-2 sm:px-10 sm:py-5 bg-white text-[#1C4E3D] rounded-full font-bold sm:text-lg hover:bg-gray-100 transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105"
             >
               Commencer maintenant
               <ArrowRightIcon class="w-6 h-6 group-hover:translate-x-2 transition-transform" />
