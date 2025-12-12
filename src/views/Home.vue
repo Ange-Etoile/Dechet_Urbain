@@ -159,7 +159,7 @@ const stats = [
 
       <!-- CTA Section -->
       <section class="py-16 sm:py-20 lg:py-24">
-        <div class="bg-gradient-to-br from-[#1C4E3D] to-[#2a6b56] rounded-3xl p-4 sm:p-12 lg:p-16 text-center shadow-2xl">
+        <div class="bg-gradient-to-br from-[#1C4E3D] to-[#2a6b56] rounded-3xl py-8 px-6 sm:p-12 lg:p-16 text-center shadow-2xl">
           <div class="max-w-3xl mx-auto">
             <GlobeAltIcon class="w-16 h-16 text-white/80 mx-auto mb-6" />
             <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
