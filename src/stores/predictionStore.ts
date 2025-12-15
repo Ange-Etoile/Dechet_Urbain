@@ -6,109 +6,127 @@ interface Prediction {
   confidence: number;
 }
 
-// L'URL de votre endpoint de prédiction sur Hugging Face
-const RENDER_BACKEND_URL = "https://angeetoile-waste-classifier-backend.hf.space/predict";
+interface RecyclingInfo {
+  recyclable: boolean;
+  binColor: string;
+  recommendations: string[];
+  specialInstructions?: string;
+  generalClass?: string;
+  iconType?: string;
+  message?: string;
+}
 
-// Temps d'attente maximum pour la requête (150 secondes)
+const BACKEND_URL = "https://angeetoile-waste-classifier-backend.hf.space/predict";
 const AXIOS_TIMEOUT_MS = 150000;
 
-export const usePredictionStore = () => {
-  const predictionResults = ref<Prediction[]>([]);
-  const recyclingInfo = ref<any>(null);
-  const isLoading = ref<boolean>(false);
-  const error = ref<string | null>(null);
+const predictionResults = ref<Prediction[]>([]);
+const recyclingInfo = ref<RecyclingInfo | null>(null);
+const isLoading = ref<boolean>(false);
+const error = ref<string | null>(null);
 
-  // Propriété calculée pour la catégorie principale (la plus haute confiance)
-  const mainPrediction = computed(() => {
-    if (predictionResults.value.length === 0) return null;
-    return predictionResults.value.reduce((prev, current) =>
-      current.confidence > prev.confidence ? current : prev
-    );
-  });
+const mainPrediction = computed(() => {
+  if (predictionResults.value.length === 0) return null;
+  return predictionResults.value.reduce((prev, current) =>
+    current.confidence > prev.confidence ? current : prev
+  );
+});
 
-  // Calcule si le déchet est recyclable ou non, basé sur les infos du backend
-  const isRecyclable = computed(() => {
-    return recyclingInfo.value?.recyclable === true;
-  });
+const isRecyclable = computed(() => {
+  return recyclingInfo.value?.recyclable === true;
+});
 
-  // Calcule la probabilité pour la barre de progression de recyclage
-  const recyclableProbability = computed(() => {
-    const mainPred = mainPrediction.value;
+const recyclableProbability = computed(() => {
+  const mainPred = mainPrediction.value;
+  if (!mainPred) return 0;
+  return mainPred.confidence;
+});
 
-    if (!mainPred) return 0;
+const reset = () => {
+  predictionResults.value = [];
+  recyclingInfo.value = null;
+  isLoading.value = false;
+  error.value = null;
+};
 
-    // Si c'est recyclable, la probabilité est la confiance de la meilleure catégorie
-    if (isRecyclable.value) {
-      return mainPred.confidence;
+const uploadAndPredict = async (fileToUpload: File) => {
+  console.log("🚀 uploadAndPredict DÉMARRÉ");
+
+  if (!fileToUpload) {
+    error.value = "Aucun fichier sélectionné pour l'analyse.";
+    return;
+  }
+
+  reset();
+  isLoading.value = true;
+
+  const formData = new FormData();
+  formData.append('image', fileToUpload);
+
+  try {
+    console.log("📤 Envoi de la requête...");
+    
+    const response = await axios.post(BACKEND_URL, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      timeout: AXIOS_TIMEOUT_MS,
+    });
+
+    const data = response.data;
+
+    console.log("✅ Réponse API reçue !");
+    console.log("📊 Data complète:", data);
+
+    if (!data.prediction || !data.prediction.top3_categories) {
+      throw new Error("Structure de réponse invalide");
     }
-    return mainPred.confidence;
-  });
 
-  const reset = () => {
-    predictionResults.value = [];
-    recyclingInfo.value = null;
-    isLoading.value = false;
-    error.value = null;
-  };
+    // Mise à jour des prédictions
+    predictionResults.value = data.prediction.top3_categories.map((p: any) => ({
+      category: p.category.toLowerCase().replace(/\s+/g, '_'),
+      confidence: p.confidence
+    }));
 
-  // Fonction d'appel API pour l'upload (utilise Axios)
-  const uploadAndPredict = async (fileToUpload: File) => {
-    console.log("--- 1. uploadAndPredict DÉMARRÉ ---");
+    // Mise à jour des infos de recyclage - CORRIGÉ
+    recyclingInfo.value = {
+      recyclable: data.recycling_info.recyclable || false,
+      binColor: data.recycling_info.bin_color || 'gris',
+      recommendations: data.recycling_info.recommendations || [],
+      specialInstructions: data.recycling_info.special_instructions || '',
+      generalClass: data.recycling_info.general_class || data.prediction.general_class?.name || 'non-recyclable',
+      iconType: data.recycling_info.icon_type || 'warning',
+      message: data.recycling_info.message || ''
+    };
 
-    if (!fileToUpload) {
-      error.value = "Aucun fichier sélectionné pour l'analyse.";
-      return;
-    }
+    console.log("📦 predictionResults:", predictionResults.value);
+    console.log("♻️ recyclingInfo:", recyclingInfo.value);
+    console.log("✅ isRecyclable:", isRecyclable.value);
 
-    reset();
-    isLoading.value = true;
+  } catch (err) {
+    console.error("❌ Erreur lors de l'analyse:", err);
 
-    const formData = new FormData();
-    formData.append('image', fileToUpload);
+    let errorMessage = `Échec de l'analyse.`;
 
-    try {
-      const response = await axios.post(RENDER_BACKEND_URL, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        },
-        timeout: AXIOS_TIMEOUT_MS,
-      });
-
-      const data = response.data;
-
-      console.log("--- 2. Réponse API reçue ! ---");
-      console.log("Structure de la réponse complète :", data);
-
-      // Mise à jour de l'état
-      predictionResults.value = data.prediction.top3_categories.map((p: any) => ({
-        category: p.category,
-        confidence: p.confidence
-      }));
-
-      recyclingInfo.value = data.recycling_info;
-
-    } catch (err) {
-      console.error("Erreur lors de l'analyse:", err);
-
-      let errorMessage = `Échec de l'analyse. Erreur: ${err instanceof Error ? err.message : 'Inconnue'}`;
-
-      if (axios.isAxiosError(err)) {
-        if (err.code === 'ECONNABORTED') {
-          errorMessage = `La connexion a expiré après 2m30s. Le modèle est trop lent ou le serveur ne répond pas.`;
-        } else if (err.response) {
-          errorMessage = err.response.data.message || `Erreur serveur HTTP ${err.response.status}`;
-        } else {
-          errorMessage = `Erreur réseau ou CORS: Impossible de connecter au serveur. (${err.message})`;
-        }
+    if (axios.isAxiosError(err)) {
+      if (err.code === 'ECONNABORTED') {
+        errorMessage = `La connexion a expiré après 2m30s.`;
+      } else if (err.response) {
+        console.error("📛 Réponse erreur:", err.response.data);
+        errorMessage = err.response.data.message || `Erreur serveur HTTP ${err.response.status}`;
+      } else {
+        errorMessage = `Erreur réseau: ${err.message}`;
       }
-
-      error.value = errorMessage;
-
-    } finally {
-      isLoading.value = false;
     }
-  };
 
+    error.value = errorMessage;
+
+  } finally {
+    isLoading.value = false;
+    console.log("🏁 Terminé - isLoading:", isLoading.value);
+  }
+};
+
+export const usePredictionStore = () => {
   return {
     predictionResults,
     recyclingInfo,
