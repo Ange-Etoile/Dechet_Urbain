@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup>
 import CardAction from '@/components/CardAction.vue';
 import CardCategory from '@/components/CardCategory.vue';
 import CardDescribe from '@/components/CardDescribe.vue';
@@ -15,12 +15,24 @@ import {
   NoSymbolIcon,
   SparklesIcon
 } from '@heroicons/vue/24/outline';
+import { toRefs } from 'vue';
 
 // Initialiser le Store
 const store = usePredictionStore();
 
+// Déstructurer les propriétés du store
+const {
+  predictionResults,
+  isLoading,
+  error,
+  mainPrediction,
+  recyclingInfo,
+  isRecyclable,
+  recyclableProbability
+} = toRefs(store);
+
 // Fonction pour gérer l'événement 'photoTaken' de CardAction
-const handlePhotoTaken = (file: File) => {
+const handlePhotoTaken = (file) => {
   store.uploadAndPredict(file);
 };
 </script>
@@ -39,21 +51,21 @@ const handlePhotoTaken = (file: File) => {
           <CardAction @photoTaken="handlePhotoTaken($event)" />
 
           <CardRecommadation
-            :category="store.mainPrediction?.category || 'trash'"
-            :isRecyclable="store.isRecyclable"
-            :binColor="store.recyclingInfo?.bin_color || 'Gris'"
-            :recommendations="store.recyclingInfo?.recommendations || []"
+            :category="mainPrediction?.category || 'trash'"
+            :isRecyclable="isRecyclable"
+            :binColor="recyclingInfo?.bin_color || 'Gris'"
+            :recommendations="recyclingInfo?.recommendations || []"
             nearestLocation="Pharmacie Dupont - 1.2 km"
           />
         </div>
 
         <div class="flex">
           <CardResult
-            :predictions="store.predictionResults"
-            :isLoading="store.isLoading"
-            :error="store.error"
-            :isRecyclable="store.isRecyclable"
-            :recyclableProbability="store.recyclableProbability"
+            :predictions="predictionResults"
+            :isLoading="isLoading"
+            :error="error"
+            :isRecyclable="isRecyclable"
+            :recyclableProbability="recyclableProbability"
           />
         </div>
       </div>
