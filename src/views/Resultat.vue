@@ -6,43 +6,60 @@ import CardRecommadation from '@/components/CardRecommadation.vue';
 import CardResult from '@/components/CardResult.vue';
 import CardUpload from '@/components/CardUpload.vue';
 import Header from '@/components/Header.vue';
+
+// Import du Store et des icônes
+import { usePredictionStore } from '@/stores/predictionStore';
 import { 
   ArrowPathIcon, 
   ExclamationTriangleIcon, 
   NoSymbolIcon,
   SparklesIcon 
 } from '@heroicons/vue/24/outline';
+
+// 1. Initialiser le Store
+const store = usePredictionStore();
+
+// 2. Fonction pour gérer l'événement 'photoTaken' de CardAction
+const handlePhotoTaken = (file: File) => {
+    store.uploadAndPredict(file);
+};
 </script>
 
 <template>
   <div class="w-full min-h-screen h-auto flex flex-col gap-12 sm:gap-16 lg:gap-24 p-2 sm:p-4 lg:p-6">
-    <!-- Header -->
     <Header />
     
     <main class="w-full max-w-7xl mx-auto h-auto flex flex-col gap-8 sm:gap-10 lg:gap-12">
-      <!-- Section Description -->
       <CardDescribe />
       
-      <!-- Section principale - Upload et Actions -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 lg:gap-6">
-        <!-- Colonne gauche: Upload et Caméra -->
         <div class="flex flex-col gap-4 sm:gap-5">
           <CardUpload />
-          <CardAction />
+          
+          <CardAction 
+            @photoTaken="handlePhotoTaken($event)" 
+          />
+          
           <CardRecommadation
-            category="trash"  
-            :isRecyclable="false"
+            :category="store.mainPrediction.value?.category || 'trash'" 
+            :isRecyclable="store.recyclingInfo.value?.recyclable || false"
+            :binColor="store.recyclingInfo.value?.bin_color || 'Gris'"
+            :recommendations="store.recyclingInfo.value?.recommendations || []"
             nearestLocation="Pharmacie Dupont - 1.2 km"
           />
         </div>
         
-        <!-- Colonne droite: Résultats (prend toute la hauteur) -->
         <div class="flex">
-          <CardResult />
+          <CardResult 
+            :predictions="store.predictionResults.value" 
+            :isRecyclable="store.recyclingInfo.value?.recyclable"
+            :recyclableProbability="store.recyclingInfo.value?.general_class?.confidence || 0"
+            :isLoading="store.isLoading.value"
+            :error="store.error.value"
+          />
         </div>
       </div>
       
-      <!-- Section Catégories de déchets -->
       <div class="flex flex-col gap-4 sm:gap-6 items-center justify-center py-6 sm:py-8">
         <div class="text-center space-y-2">
           <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800">
@@ -88,19 +105,19 @@ import {
         </div>
       </div>
     </main>
-  </div>  
+  </div>  
 </template>
 
 <style scoped>
-/* Animation au scroll (optionnel) */
+/* Votre style existant */
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
