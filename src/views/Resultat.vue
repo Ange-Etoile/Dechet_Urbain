@@ -7,7 +7,6 @@ import CardResult from '@/components/CardResult.vue';
 import CardUpload from '@/components/CardUpload.vue';
 import Header from '@/components/Header.vue';
 
-// Import du Store et des icônes
 import { usePredictionStore } from '@/stores/predictionStore';
 import {
   ArrowPathIcon,
@@ -17,10 +16,8 @@ import {
 } from '@heroicons/vue/24/outline';
 import { toRefs } from 'vue';
 
-// Initialiser le Store
 const store = usePredictionStore();
 
-// Déstructurer les propriétés du store
 const {
   predictionResults,
   isLoading,
@@ -31,7 +28,6 @@ const {
   recyclableProbability
 } = toRefs(store);
 
-// Fonction pour gérer l'événement 'photoTaken' de CardAction
 const handlePhotoTaken = (file) => {
   store.uploadAndPredict(file);
 };
@@ -47,14 +43,14 @@ const handlePhotoTaken = (file) => {
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 lg:gap-6">
         <div class="flex flex-col gap-4 sm:gap-5">
           <CardUpload />
-
           <CardAction @photoTaken="handlePhotoTaken($event)" />
 
           <CardRecommadation
-            :category="mainPrediction?.category || 'trash'"
+            :category="mainPrediction?.category || 'unknown'"
             :isRecyclable="isRecyclable"
-            :binColor="recyclingInfo?.bin_color || 'Gris'"
+            :binColor="recyclingInfo?.binColor || 'gris'"
             :recommendations="recyclingInfo?.recommendations || []"
+            :isLoading="isLoading"
             nearestLocation="Pharmacie Dupont - 1.2 km"
           />
         </div>
@@ -117,17 +113,3 @@ const handlePhotoTaken = (file) => {
     </main>
   </div>
 </template>
-
-<style scoped>
-/* Animation au scroll (optionnel) */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-</style>
