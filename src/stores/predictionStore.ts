@@ -7,7 +7,7 @@ interface Prediction {
 }
 
 // L'URL de votre endpoint de prédiction sur Render
-const RENDER_BACKEND_URL = "https://waste-classification-backend-xcwr.onrender.com/predict"; 
+const RENDER_BACKEND_URL = "https://angeetoile-waste-classifier-backend.hf.space/predict"; 
 
 // Temps d'attente maximum pour la requête (150 secondes pour laisser une marge après les 120s de Gunicorn)
 const AXIOS_TIMEOUT_MS = 150000; 
