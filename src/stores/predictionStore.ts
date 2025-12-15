@@ -62,7 +62,7 @@ export const usePredictionStore = () => {
             const data = response.data;
             
             console.log("--- 2. Réponse API reçue ! ---")
-
+            console.log("Structure de la réponse complète :", data);
             // Mise à jour de l'état
             predictionResults.value = data.prediction.top3_categories.map((p: any) => ({
                 category: p.category,
