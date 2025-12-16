@@ -27,13 +27,13 @@ const props = withDefaults(defineProps<Props>(), {
   error: null
 });
 
-// 1. FORMATAGE DES NOMS (Utility)
+// 1. FORMATAGE DES NOMS
 const formatCategoryName = (name: string) => {
   if (!name) return 'Inconnu';
   return (name.charAt(0).toUpperCase() + name.slice(1)).replace(/-/g, ' ');
 };
 
-// 2. CONFIGURATION VISUELLE PAR CLASSE (Avec Normalisation)
+// 2. CONFIGURATION VISUELLE PAR CLASSE
 const classUIConfig = computed(() => {
   const configs: Record<string, any> = {
     'recyclable': {
@@ -74,15 +74,12 @@ const classUIConfig = computed(() => {
     }
   };
 
-  // Normalisation de la string reçue du backend
   let key = props.generalClass?.toLowerCase().trim() || 'non-recyclable';
   
-  // Mapping des alias courants du backend vers les clés du frontend
   if (key === 'organic') key = 'organique';
   if (key === 'danger' || key === 'hazardous') key = 'dangerous';
   if (key === 'trash' || key === 'garbage') key = 'non-recyclable';
 
-  // Si la classe n'est pas dans la liste, on crée une config "Inconnu" élégante au lieu de forcer l'orange
   if (!configs[key]) {
     return {
       title: formatCategoryName(key),
@@ -94,7 +91,6 @@ const classUIConfig = computed(() => {
       iconBoxColor: 'bg-blue-200'
     };
   }
-
   return configs[key];
 });
 
@@ -119,22 +115,17 @@ const getCategoryConfig = (category: string) => {
 };
 
 const sortedPredictions = computed(() => {
-  return [...props.predictions].sort((a, b) => b.confidence - a.confidence);
+  return props.predictions ? [...props.predictions].sort((a, b) => b.confidence - a.confidence) : [];
 });
 
-const mainCategory = computed(() => sortedPredictions.value[0] || null);
+const mainCategory = computed(() => sortedPredictions.value.length > 0 ? sortedPredictions.value[0] : null);
 
 </script>
 
 <template>
-  <div class="h-auto rounded-xl shadow-lg w-full p-4 sm:p-6 flex flex-col gap-4 items-start bg-[#1C4E3D] transition-all duration-500">
+  <div class="h-auto rounded-xl shadow-lg w-full p-4 sm:p-6 flex flex-col gap-4 items-start bg-[#1C4E3D] transition-all duration-500 min-h-[450px]">
     
-    <div class="text-[10px] font-mono text-white/30 w-full flex justify-between px-1">
-      <span>DEBUG: class="{{ props.generalClass }}"</span>
-      <span>prob="{{ props.classProbability }}"</span>
-    </div>
-
-    <div v-if="props.isLoading" class="w-full h-[400px] flex flex-col items-center justify-center gap-4 text-white">
+    <div v-if="props.isLoading" class="w-full flex-1 flex flex-col items-center justify-center gap-4 text-white">
       <div class="relative">
         <div class="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
         <SparklesIcon class="w-6 h-6 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
@@ -142,13 +133,13 @@ const mainCategory = computed(() => sortedPredictions.value[0] || null);
       <p class="text-lg font-medium animate-pulse">Analyse de l'image...</p>
     </div>
     
-    <div v-else-if="props.error" class="w-full h-[400px] flex flex-col items-center justify-center gap-4 p-6 bg-red-900/20 rounded-xl border border-red-500/30">
+    <div v-else-if="props.error" class="w-full flex-1 flex flex-col items-center justify-center gap-4 p-6 bg-red-900/20 rounded-xl border border-red-500/30">
       <ExclamationTriangleIcon class="w-16 h-16 text-red-400" />
       <h3 class="text-xl font-bold text-red-200">Échec de l'analyse</h3>
       <p class="text-sm text-red-300/80 text-center bg-red-950/40 p-3 rounded-lg">{{ props.error }}</p>
     </div>
 
-    <div v-else-if="!mainCategory" class="w-full h-[400px] flex flex-col items-center justify-center gap-4 text-white/40 border-2 border-dashed border-white/10 rounded-xl">
+    <div v-else-if="!mainCategory" class="w-full flex-1 flex flex-col items-center justify-center gap-4 text-white/40 border-2 border-dashed border-white/10 rounded-xl">
       <div class="p-4 bg-white/5 rounded-full">
         <DocumentTextIcon class="w-12 h-12"/>
       </div>
@@ -162,7 +153,7 @@ const mainCategory = computed(() => sortedPredictions.value[0] || null);
         </div>
         <div>
           <h1 class="text-xl font-bold text-white leading-tight">Résultat d'analyse</h1>
-          <p class="text-xs text-[#B7D9E4]/70">Identifié via Computer Vision</p>
+          <p class="text-xs text-[#B7D9E4]/70">Identifié via AI Vision</p>
         </div>
       </div>
 
@@ -183,7 +174,7 @@ const mainCategory = computed(() => sortedPredictions.value[0] || null);
             </div>
           </div>
           <div class="text-right">
-            <p class="text-[10px] font-black text-gray-400 uppercase">Indice</p>
+            <p class="text-[10px] font-black text-gray-400 uppercase">Confiance</p>
             <p class="text-2xl font-black text-[#1C4E3D]">{{ Math.round(mainCategory.confidence * 100) }}%</p>
           </div>
         </div>
@@ -218,10 +209,10 @@ const mainCategory = computed(() => sortedPredictions.value[0] || null);
         </div>
       </div>
 
-      <div class="w-full mt-2">
+      <div class="w-full mt-2" v-if="sortedPredictions.length > 1">
         <h3 class="text-xs font-black text-[#B7D9E4] uppercase tracking-widest mb-3 flex items-center gap-2">
           <ArchiveBoxIcon class="w-4 h-4" />
-          Probabilités secondaires
+          Analyses alternatives
         </h3>
         <div class="grid grid-cols-1 gap-2">
           <div v-for="(prediction, index) in sortedPredictions.slice(1, 3)" :key="index" 
