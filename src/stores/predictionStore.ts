@@ -7,11 +7,11 @@ interface Prediction {
 }
 
 interface RecyclingInfo {
-  recyclable: boolean; // Gardé pour la logique interne
+  recyclable: boolean;
   binColor: string;
   recommendations: string[];
   specialInstructions?: string;
-  generalClass: string; // OBLIGATOIRE MAINTENANT
+  generalClass: string;
   iconType?: string;
   message?: string;
 }
@@ -31,7 +31,7 @@ const mainPrediction = computed(() => {
   );
 });
 
-// REMPLACÉ : On expose la classe générale au lieu d'un simple booléen
+
 const currentGeneralClass = computed(() => {
   return recyclingInfo.value?.generalClass || 'non-recyclable';
 });
@@ -88,6 +88,7 @@ const uploadAndPredict = async (fileToUpload: File) => {
 
   } catch (err) {
     error.value = "Échec de l'analyse.";
+    console.error(err)
   } finally {
     isLoading.value = false;
   }
