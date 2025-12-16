@@ -18,14 +18,16 @@ import { toRefs } from 'vue';
 
 const store = usePredictionStore();
 
+// On récupère les refs du store
+// Assurez-vous que votre store exporte bien "generalClass" et "classProbability"
 const {
   predictionResults,
   isLoading,
   error,
   mainPrediction,
   recyclingInfo,
-  isRecyclable,
-  recyclableProbability
+  generalClass,        
+  classProbability     
 } = toRefs(store);
 
 const handlePhotoTaken = (file) => {
@@ -47,11 +49,11 @@ const handlePhotoTaken = (file) => {
 
           <CardRecommadation
             :category="mainPrediction?.category || 'unknown'"
-            :isRecyclable="isRecyclable"
+            :generalClass="generalClass || 'non-recyclable'" 
             :binColor="recyclingInfo?.binColor || 'gris'"
             :recommendations="recyclingInfo?.recommendations || []"
             :isLoading="isLoading"
-            nearestLocation="Pharmacie Dupont - 1.2 km"
+            nearestLocation="Point de collecte - 1.2 km"
           />
         </div>
 
@@ -60,8 +62,8 @@ const handlePhotoTaken = (file) => {
             :predictions="predictionResults"
             :isLoading="isLoading"
             :error="error"
-            :isRecyclable="isRecyclable"
-            :recyclableProbability="recyclableProbability"
+            :generalClass="generalClass || 'non-recyclable'"
+            :classProbability="classProbability || 0"
           />
         </div>
       </div>

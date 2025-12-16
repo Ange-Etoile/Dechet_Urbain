@@ -7,11 +7,11 @@ interface Prediction {
 }
 
 interface RecyclingInfo {
-  recyclable: boolean;
+  recyclable: boolean; // Gardé pour la logique interne
   binColor: string;
   recommendations: string[];
   specialInstructions?: string;
-  generalClass?: string;
+  generalClass: string; // OBLIGATOIRE MAINTENANT
   iconType?: string;
   message?: string;
 }
@@ -31,8 +31,9 @@ const mainPrediction = computed(() => {
   );
 });
 
-const isRecyclable = computed(() => {
-  return recyclingInfo.value?.recyclable === true;
+// REMPLACÉ : On expose la classe générale au lieu d'un simple booléen
+const currentGeneralClass = computed(() => {
+  return recyclingInfo.value?.generalClass || 'non-recyclable';
 });
 
 const recyclableProbability = computed(() => {
@@ -49,10 +50,8 @@ const reset = () => {
 };
 
 const uploadAndPredict = async (fileToUpload: File) => {
-  console.log("🚀 uploadAndPredict DÉMARRÉ");
-
   if (!fileToUpload) {
-    error.value = "Aucun fichier sélectionné pour l'analyse.";
+    error.value = "Aucun fichier sélectionné.";
     return;
   }
 
@@ -63,66 +62,34 @@ const uploadAndPredict = async (fileToUpload: File) => {
   formData.append('image', fileToUpload);
 
   try {
-    console.log("📤 Envoi de la requête...");
-    
     const response = await axios.post(BACKEND_URL, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      },
+      headers: { 'Content-Type': 'multipart/form-data' },
       timeout: AXIOS_TIMEOUT_MS,
     });
 
     const data = response.data;
 
-    console.log("✅ Réponse API reçue !");
-    console.log("📊 Data complète:", data);
-
-    if (!data.prediction || !data.prediction.top3_categories) {
-      throw new Error("Structure de réponse invalide");
-    }
-
-    // Mise à jour des prédictions
+    // Mise à jour des prédictions (on garde les noms exacts du backend)
     predictionResults.value = data.prediction.top3_categories.map((p: any) => ({
-      category: p.category.toLowerCase().replace(/\s+/g, '_'),
+      category: p.category,
       confidence: p.confidence
     }));
 
-    // Mise à jour des infos de recyclage - CORRIGÉ
+    // Mise à jour des infos avec la CLASSE GÉNÉRALE
     recyclingInfo.value = {
-      recyclable: data.recycling_info.recyclable || false,
-      binColor: data.recycling_info.bin_color || 'gris',
-      recommendations: data.recycling_info.recommendations || [],
-      specialInstructions: data.recycling_info.special_instructions || '',
-      generalClass: data.recycling_info.general_class || data.prediction.general_class?.name || 'non-recyclable',
-      iconType: data.recycling_info.icon_type || 'warning',
-      message: data.recycling_info.message || ''
+      recyclable: data.recycling_info.recyclable,
+      binColor: data.recycling_info.bin_color,
+      recommendations: data.recycling_info.recommendations,
+      specialInstructions: data.recycling_info.special_instructions,
+      generalClass: data.recycling_info.general_class, // 'recyclable', 'organique', etc.
+      iconType: data.recycling_info.icon_type,
+      message: data.recycling_info.message
     };
 
-    console.log("📦 predictionResults:", predictionResults.value);
-    console.log("♻️ recyclingInfo:", recyclingInfo.value);
-    console.log("✅ isRecyclable:", isRecyclable.value);
-
   } catch (err) {
-    console.error("❌ Erreur lors de l'analyse:", err);
-
-    let errorMessage = `Échec de l'analyse.`;
-
-    if (axios.isAxiosError(err)) {
-      if (err.code === 'ECONNABORTED') {
-        errorMessage = `La connexion a expiré après 2m30s.`;
-      } else if (err.response) {
-        console.error("📛 Réponse erreur:", err.response.data);
-        errorMessage = err.response.data.message || `Erreur serveur HTTP ${err.response.status}`;
-      } else {
-        errorMessage = `Erreur réseau: ${err.message}`;
-      }
-    }
-
-    error.value = errorMessage;
-
+    error.value = "Échec de l'analyse.";
   } finally {
     isLoading.value = false;
-    console.log("🏁 Terminé - isLoading:", isLoading.value);
   }
 };
 
@@ -133,7 +100,7 @@ export const usePredictionStore = () => {
     isLoading,
     error,
     mainPrediction,
-    isRecyclable,
+    currentGeneralClass,
     recyclableProbability,
     uploadAndPredict,
     reset

@@ -14,36 +14,79 @@ import {
   CakeIcon,
   XCircleIcon,
   SparklesIcon,
-  ExclamationCircleIcon
+  ExclamationCircleIcon,
+  ExclamationTriangleIcon,
+  CheckBadgeIcon
 } from '@heroicons/vue/24/outline';
 
-// Props pour recevoir les résultats du modèle et l'état du store
 interface Props {
   predictions?: {
     category: string;
-    confidence: number; // Harmonisé avec le store
+    confidence: number;
   }[];
-  isRecyclable?: boolean;
-  recyclableProbability?: number;
-  isLoading?: boolean; // État de chargement
-  error?: string | null; // Message d'erreur
+  generalClass?: string; 
+  classProbability?: number; 
+  isLoading?: boolean;
+  error?: string | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   predictions: () => [], 
-  isRecyclable: false,
-  recyclableProbability: 0,
+  generalClass: 'non-recyclable',
+  classProbability: 0,
   isLoading: false,
   error: null
 });
 
-// Configuration des catégories avec icônes et couleurs
+// Configuration visuelle par classe
+const classUIConfig = computed(() => {
+  const configs: Record<string, any> = {
+    'recyclable': {
+      title: 'Recyclable',
+      icon: CheckCircleIcon,
+      colorClass: 'text-green-700',
+      bgColor: 'bg-green-50',
+      borderColor: 'border-green-300',
+      progressColor: 'bg-green-600',
+      iconBoxColor: 'bg-green-200'
+    },
+    'organique': {
+      title: 'Organique',
+      icon: CheckBadgeIcon,
+      colorClass: 'text-emerald-700',
+      bgColor: 'bg-emerald-50',
+      borderColor: 'border-emerald-300',
+      progressColor: 'bg-emerald-600',
+      iconBoxColor: 'bg-emerald-200'
+    },
+    'dangerous': {
+      title: 'Dangereux',
+      icon: ExclamationTriangleIcon,
+      colorClass: 'text-red-700',
+      bgColor: 'bg-red-50',
+      borderColor: 'border-red-300',
+      progressColor: 'bg-red-600',
+      iconBoxColor: 'bg-red-200'
+    },
+    'non-recyclable': {
+      title: 'Non Recyclable',
+      icon: XCircleIcon,
+      colorClass: 'text-orange-700',
+      bgColor: 'bg-orange-50',
+      borderColor: 'border-orange-300',
+      progressColor: 'bg-orange-600',
+      iconBoxColor: 'bg-orange-200'
+    }
+  };
+  return configs[props.generalClass] || configs['non-recyclable'];
+});
+
 const categoryConfig: Record<string, { icon: any; color: string; bgColor: string }> = {
   'trash': { icon: TrashIcon, color: '#6B7280', bgColor: '#F3F4F6' },
   'paper': { icon: DocumentTextIcon, color: '#3B82F6', bgColor: '#DBEAFE' },
   'plastic': { icon: CubeIcon, color: '#F59E0B', bgColor: '#FEF3C7' },
   'glass': { icon: BeakerIcon, color: '#10B981', bgColor: '#D1FAE5' },
-  'medical': { icon: CheckCircleIcon, color: '#EF4444', bgColor: '#FEE2E2' },
+  'medical': { icon: ExclamationCircleIcon, color: '#EF4444', bgColor: '#FEE2E2' },
   'metal': { icon: WrenchScrewdriverIcon, color: '#8B5CF6', bgColor: '#EDE9FE' },
   'e-waste': { icon: ComputerDesktopIcon, color: '#EC4899', bgColor: '#FCE7F3' },
   'automobile waste': { icon: TruckIcon, color: '#F97316', bgColor: '#FFEDD5' },
@@ -52,7 +95,6 @@ const categoryConfig: Record<string, { icon: any; color: string; bgColor: string
   'food organic': { icon: CakeIcon, color: '#84CC16', bgColor: '#ECFCCB' }
 };
 
-// Trouver la catégorie principale (plus haute confiance)
 const mainCategory = computed(() => {
   if (props.predictions.length === 0) return null;
   return props.predictions.reduce((prev, current) => 
@@ -60,23 +102,15 @@ const mainCategory = computed(() => {
   );
 });
 
-// Trier les prédictions par confiance décroissante
 const sortedPredictions = computed(() => {
   return [...props.predictions].sort((a, b) => b.confidence - a.confidence);
 });
 
-// Obtenir la configuration d'une catégorie
 const getCategoryConfig = (category: string) => {
-  return categoryConfig[category] || { 
-    icon: TrashIcon, 
-    color: '#6B7280', 
-    bgColor: '#F3F4F6' 
-  };
+  return categoryConfig[category] || { icon: TrashIcon, color: '#6B7280', bgColor: '#F3F4F6' };
 };
 
-// Formater le nom de la catégorie
 const formatCategoryName = (category: string) => {
-  // Remplacer les tirets par des espaces pour un affichage plus propre
   return (category.charAt(0).toUpperCase() + category.slice(1)).replace(/-/g, ' ');
 };
 </script>
@@ -85,26 +119,22 @@ const formatCategoryName = (category: string) => {
   <div class="h-auto rounded-xl shadow-lg w-full p-4 sm:p-6 flex flex-col gap-6 items-start bg-[#1C4E3D]">
     
     <div v-if="props.isLoading" class="w-full h-[500px] flex flex-col items-center justify-center gap-4 text-white">
-        <svg class="animate-spin h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <svg class="animate-spin h-10 w-10 text-white" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
         <p class="text-lg font-medium">Analyse en cours...</p>
-        <p class="text-sm text-[#B7D9E4]">Veuillez patienter, cela peut prendre quelques secondes.</p>
     </div>
     
     <div v-else-if="props.error" class="w-full h-[500px] flex flex-col items-center justify-center gap-4 p-6 bg-red-800/20 rounded-lg">
         <ExclamationCircleIcon class="w-12 h-12 text-red-400" />
-        <p class="text-xl font-bold text-red-300 text-center">Erreur d'analyse</p>
+        <p class="text-xl font-bold text-red-300">Erreur d'analyse</p>
         <p class="text-sm text-red-200 text-center">{{ props.error }}</p>
     </div>
 
     <div v-else-if="!mainCategory" class="w-full h-[500px] flex flex-col items-center justify-center gap-4 text-white">
         <DocumentTextIcon class="w-12 h-12 text-[#B7D9E4]"/>
         <p class="text-lg font-medium">Prêt pour l'analyse !</p>
-        <p class="text-sm text-[#B7D9E4] text-center max-w-sm">
-            Téléchargez une image ou utilisez la caméra pour commencer la classification des déchets.
-        </p>
     </div>
     
     <template v-else>
@@ -114,7 +144,7 @@ const formatCategoryName = (category: string) => {
         </div>
         <div class="flex-1">
           <h1 class="text-xl sm:text-2xl font-bold text-white">Résultat de l'analyse</h1>
-          <p class="text-sm text-[#B7D9E4] mt-1">Classification multi-classes avec confiance</p>
+          <p class="text-sm text-[#B7D9E4] mt-1">Classification précise par intelligence artificielle</p>
         </div>
       </div>
 
@@ -122,82 +152,57 @@ const formatCategoryName = (category: string) => {
         <div class="bg-white rounded-lg p-4 sm:p-5 shadow-md border-2 border-[#B7D9E4]">
           <div class="flex items-center gap-2 mb-3">
             <CheckCircleIcon class="w-5 h-5 text-[#1C4E3D]" />
-            <span class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Catégorie détectée</span>
+            <span class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Nature de l'objet</span>
           </div>
           <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-3">
-              <div 
-                class="w-12 h-12 rounded-lg flex items-center justify-center"
-                :style="{ backgroundColor: getCategoryConfig(mainCategory.category).bgColor }"
-              >
-                <component 
-                  :is="getCategoryConfig(mainCategory.category).icon" 
-                  class="w-6 h-6"
-                  :style="{ color: getCategoryConfig(mainCategory.category).color }"
-                />
+              <div class="w-12 h-12 rounded-lg flex items-center justify-center" :style="{ backgroundColor: getCategoryConfig(mainCategory.category).bgColor }">
+                <component :is="getCategoryConfig(mainCategory.category).icon" class="w-6 h-6" :style="{ color: getCategoryConfig(mainCategory.category).color }" />
               </div>
               <div>
-                <p class="text-sm text-gray-500">Classification</p>
-                <h2 class="text-sm sm:text-3xl font-bold" :style="{ color: getCategoryConfig(mainCategory.category).color }">
+                <p class="text-sm text-gray-500">Objet détecté</p>
+                <h2 class="text-xl sm:text-3xl font-bold" :style="{ color: getCategoryConfig(mainCategory.category).color }">
                   {{ formatCategoryName(mainCategory.category) }}
                 </h2>
               </div>
             </div>
             <div class="text-right">
-              <p class="text-sm text-gray-500">Confiance</p>
-              <p class="text-sm sm:text-3xl font-bold text-[#1C4E3D]">
-                {{ Math.round(mainCategory.confidence * 100) }}%
-              </p>
+              <p class="text-sm text-gray-500">Indice</p>
+              <p class="text-xl sm:text-3xl font-bold text-[#1C4E3D]">{{ Math.round(mainCategory.confidence * 100) }}%</p>
             </div>
           </div>
           <div class="w-full h-3 rounded-full bg-gray-200 overflow-hidden">
-            <div 
-              class="h-full rounded-full transition-all duration-500"
-              :style="{ 
-                width: `${mainCategory.confidence * 100}%`,
-                backgroundColor: getCategoryConfig(mainCategory.category).color
-              }"
-            ></div>
+            <div class="h-full transition-all duration-500" :style="{ width: `${mainCategory.confidence * 100}%`, backgroundColor: getCategoryConfig(mainCategory.category).color }"></div>
           </div>
         </div>
       </div>
 
       <div class="w-full">
         <div 
-          class="rounded-lg p-4 sm:p-5 shadow-md"
-          :class="isRecyclable ? 'bg-green-50 border-2 border-green-300' : 'bg-red-50 border-2 border-red-300'"
+          class="rounded-lg p-4 sm:p-5 shadow-md transition-colors duration-300"
+          :class="[classUIConfig.bgColor, classUIConfig.borderColor, 'border-2']"
         >
           <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-3">
-              <div 
-                class="w-12 h-12 rounded-lg flex items-center justify-center"
-                :class="isRecyclable ? 'bg-green-200' : 'bg-red-200'"
-              >
-                <CheckCircleIcon v-if="isRecyclable" class="w-6 h-6 text-green-700" />
-                <XCircleIcon v-else class="w-6 h-6 text-red-700" />
+              <div class="w-12 h-12 rounded-lg flex items-center justify-center shadow-inner" :class="classUIConfig.iconBoxColor">
+                <component :is="classUIConfig.icon" class="w-6 h-6" :class="classUIConfig.colorClass" />
               </div>
               <div>
-                <p class="text-sm text-gray-600">Recyclabilité</p>
-                <h3 
-                  class="text-sm sm:text-2xl font-bold"
-                  :class="isRecyclable ? 'text-green-700' : 'text-red-700'"
-                >
-                  {{ isRecyclable ? 'Recyclable' : 'Non recyclable' }}
+                <p class="text-sm text-gray-600">Statut de tri</p>
+                <h3 class="text-xl sm:text-2xl font-bold" :class="classUIConfig.colorClass">
+                  {{ classUIConfig.title }}
                 </h3>
               </div>
             </div>
-            <p 
-              class="text-sm sm:text-3xl font-bold"
-              :class="isRecyclable ? 'text-green-700' : 'text-red-700'"
-            >
-              {{ Math.round(recyclableProbability * 100) }}%
+            <p class="text-xl sm:text-3xl font-bold" :class="classUIConfig.colorClass">
+              {{ Math.round(props.classProbability * 100) }}%
             </p>
           </div>
-          <div class="w-full h-3 rounded-full bg-white overflow-hidden">
+          <div class="w-full h-3 rounded-full bg-white/50 overflow-hidden">
             <div 
-              class="h-full rounded-full transition-all duration-500"
-              :class="isRecyclable ? 'bg-green-600' : 'bg-red-600'"
-              :style="{ width: `${recyclableProbability * 100}%` }"
+              class="h-full transition-all duration-700"
+              :class="classUIConfig.progressColor"
+              :style="{ width: `${props.classProbability * 100}%` }"
             ></div>
           </div>
         </div>
@@ -205,46 +210,22 @@ const formatCategoryName = (category: string) => {
 
       <div class="w-full">
         <h3 class="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-          <span>Toutes les classifications</span>
-          <span class="text-sm text-[#B7D9E4] font-normal">({{ sortedPredictions.length }})</span>
+          <span>Détails techniques</span>
+          <span class="text-sm text-[#B7D9E4] font-normal">({{ sortedPredictions.length }} classes)</span>
         </h3>
-        <div class="flex flex-col gap-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-          <div 
-            v-for="(prediction, index) in sortedPredictions" 
-            :key="index"
-            class="w-full bg-white rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow"
-          >
+        <div class="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+          <div v-for="(prediction, index) in sortedPredictions" :key="index" class="w-full bg-white/95 rounded-lg p-3 shadow-sm hover:scale-[1.01] transition-transform">
             <div class="flex items-center justify-between mb-2">
-              <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                <div 
-                  class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex flex-shrink-0 items-center justify-center"
-                  :style="{ backgroundColor: getCategoryConfig(prediction.category).bgColor }"
-                >
-                  <component 
-                    :is="getCategoryConfig(prediction.category).icon" 
-                    class="w-4 h-4 sm:w-5 sm:h-5"
-                    :style="{ color: getCategoryConfig(prediction.category).color }"
-                  />
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center" :style="{ backgroundColor: getCategoryConfig(prediction.category).bgColor }">
+                  <component :is="getCategoryConfig(prediction.category).icon" class="w-4 h-4" :style="{ color: getCategoryConfig(prediction.category).color }" />
                 </div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-xs text-gray-500">Classe</p>
-                  <h4 class="text-sm sm:text-base font-bold truncate" :style="{ color: getCategoryConfig(prediction.category).color }">
-                    {{ formatCategoryName(prediction.category) }}
-                  </h4>
-                </div>
+                <h4 class="text-sm font-bold text-gray-700">{{ formatCategoryName(prediction.category) }}</h4>
               </div>
-              <p class="text-base sm:text-lg font-bold text-gray-700 flex-shrink-0 ml-2">
-                {{ Math.round(prediction.confidence * 100) }}%
-              </p>
+              <p class="text-sm font-bold text-gray-500">{{ Math.round(prediction.confidence * 100) }}%</p>
             </div>
-            <div class="w-full h-2 rounded-full bg-gray-200 overflow-hidden">
-              <div 
-                class="h-full rounded-full transition-all duration-300"
-                :style="{ 
-                  width: `${prediction.confidence * 100}%`,
-                  backgroundColor: getCategoryConfig(prediction.category).color
-                }"
-              ></div>
+            <div class="w-full h-1.5 rounded-full bg-gray-100 overflow-hidden">
+              <div class="h-full transition-all duration-300" :style="{ width: `${prediction.confidence * 100}%`, backgroundColor: getCategoryConfig(prediction.category).color }"></div>
             </div>
           </div>
         </div>
@@ -254,35 +235,9 @@ const formatCategoryName = (category: string) => {
 </template>
 
 <style scoped>
-/* Votre style de scrollbar existant */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #B7D9E4;
-  border-radius: 10px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #9BC5D4;
-}
-
-/* Animation de chargement */
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
+.custom-scrollbar::-webkit-scrollbar { width: 5px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #B7D9E4; border-radius: 10px; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.animate-spin { animation: spin 1s linear infinite; }
 </style>
