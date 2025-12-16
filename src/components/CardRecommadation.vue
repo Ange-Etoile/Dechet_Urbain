@@ -118,7 +118,7 @@ const recommendationConfig = computed(() => {
                 icon: CheckBadgeIcon,
                 bgColor: 'bg-emerald-50', borderColor: 'border-emerald-300',
                 iconBgColor: 'bg-emerald-100', iconColor: 'text-emerald-600',
-                titleColor: 'text-emerald-800', title: '🍃 Déchet organique',
+                titleColor: 'text-emerald-800', title: 'Déchet organique',
                 message: `Ce déchet (${formatCategoryName(props.category)}) est compostable.`
             };
         case 'dangerous':
