@@ -179,7 +179,7 @@ const formatCategoryName = (category: string) => {
               <div>
                 <p class="text-sm text-gray-600">Recyclabilité</p>
                 <h3 
-                  class="text-xl sm:text-2xl font-bold"
+                  class="text-sm sm:text-2xl font-bold"
                   :class="isRecyclable ? 'text-green-700' : 'text-red-700'"
                 >
                   {{ isRecyclable ? 'Recyclable' : 'Non recyclable' }}
@@ -187,7 +187,7 @@ const formatCategoryName = (category: string) => {
               </div>
             </div>
             <p 
-              class="text-xl sm:text-3xl font-bold"
+              class="text-sm sm:text-3xl font-bold"
               :class="isRecyclable ? 'text-green-700' : 'text-red-700'"
             >
               {{ Math.round(recyclableProbability * 100) }}%
