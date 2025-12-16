@@ -1,47 +1,26 @@
 import { ref, computed } from 'vue';
 import axios from 'axios';
 
-interface Prediction {
-  category: string;
-  confidence: number;
-}
-
-interface RecyclingInfo {
-  recyclable: boolean;
-  binColor: string;
-  recommendations: string[];
-  specialInstructions?: string;
-  generalClass: string;
-  iconType?: string;
-  message?: string;
-}
-
 const BACKEND_URL = "https://angeetoile-waste-classifier-backend.hf.space/predict";
-const AXIOS_TIMEOUT_MS = 150000;
 
-const predictionResults = ref<Prediction[]>([]);
-const recyclingInfo = ref<RecyclingInfo | null>(null);
-const isLoading = ref<boolean>(false);
+// ⚠️ CRÉER LES REF EN DEHORS DE LA FONCTION (SINGLETON)
+const predictionResults = ref<any[]>([]);
+const recyclingInfo = ref<any>(null);
+const isLoading = ref(false);
 const error = ref<string | null>(null);
 
-const mainPrediction = computed(() => {
-  if (predictionResults.value.length === 0) return null;
-  return predictionResults.value.reduce((prev, current) =>
-    current.confidence > prev.confidence ? current : prev
-  );
-});
-
+// Getters
+const mainPrediction = computed(() => predictionResults.value[0] || null);
 
 const currentGeneralClass = computed(() => {
   return recyclingInfo.value?.generalClass || 'non-recyclable';
 });
 
 const recyclableProbability = computed(() => {
-  const mainPred = mainPrediction.value;
-  if (!mainPred) return 0;
-  return mainPred.confidence;
+  return mainPrediction.value?.confidence || 0;
 });
 
+// Actions
 const reset = () => {
   predictionResults.value = [];
   recyclingInfo.value = null;
@@ -51,10 +30,11 @@ const reset = () => {
 
 const uploadAndPredict = async (fileToUpload: File) => {
   if (!fileToUpload) {
-    error.value = "Aucun fichier sélectionné.";
+    error.value = "Aucun fichier sélectionné";
     return;
   }
 
+  console.log("🚀 Upload started");
   reset();
   isLoading.value = true;
 
@@ -64,34 +44,35 @@ const uploadAndPredict = async (fileToUpload: File) => {
   try {
     const response = await axios.post(BACKEND_URL, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
-      timeout: AXIOS_TIMEOUT_MS,
+      timeout: 60000,
     });
 
     const data = response.data;
+    console.log("✅ Response:", data);
 
-    if (data.success && data.predictions) {
-      predictionResults.value = data.predictions.map((p: any) => ({
-        category: p.category,
-        confidence: p.confidence
-      }));
+    if (data.success) {
+      predictionResults.value = data.predictions;
       recyclingInfo.value = {
-        recyclable: data.recycling_info.binColor !== 'gris', 
-        binColor: data.recycling_info.binColor, 
+        binColor: data.recycling_info.binColor,
         recommendations: data.recycling_info.recommendations,
-        generalClass: data.general_class, 
-        message: data.main_prediction.category
+        generalClass: data.general_class,
       };
+      
+      console.log("📦 Predictions:", predictionResults.value);
+      console.log("♻️ Recycling Info:", recyclingInfo.value);
+    } else {
+      error.value = "Réponse invalide du serveur";
     }
-
   } catch (err: any) {
-    // Affiche l'erreur réelle dans la console pour débugger
-    console.error("Détails de l'erreur axios:", err.response?.data || err.message);
-    error.value = err.response?.data?.message || "Échec de l'analyse.";
+    console.error("❌ Error:", err);
+    error.value = err.response?.data?.error || "Échec de l'analyse. Réessayez.";
   } finally {
     isLoading.value = false;
+    console.log("🏁 Upload finished, isLoading:", isLoading.value);
   }
 };
 
+// Export du store comme singleton
 export const usePredictionStore = () => {
   return {
     predictionResults,
