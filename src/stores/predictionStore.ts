@@ -74,8 +74,6 @@ const uploadAndPredict = async (fileToUpload: File) => {
         category: p.category,
         confidence: p.confidence
       }));
-      console.log(data)
-
       recyclingInfo.value = {
         recyclable: data.recycling_info.binColor !== 'gris', 
         binColor: data.recycling_info.binColor, 

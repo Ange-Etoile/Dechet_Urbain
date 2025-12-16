@@ -58,12 +58,12 @@ const handlePhotoTaken = (file) => {
         </div>
 
         <div class="flex">
-          <CardResult
-            :predictions="predictionResults"
-            :isLoading="isLoading"
-            :error="error"
-            :generalClass="generalClass || 'non-recyclable'"
-            :classProbability="classProbability || 0"
+          <CardResult 
+            :predictions="store.predictionResults"
+            :generalClass="store.generalClass" 
+            :classProbability="store.classProbability"
+            :isLoading="store.isLoading"
+            :error="store.error"
           />
         </div>
       </div>
