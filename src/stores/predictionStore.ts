@@ -69,21 +69,19 @@ const uploadAndPredict = async (fileToUpload: File) => {
 
     const data = response.data;
 
-    // CORRECTION ICI : Le backend envoie 'predictions' (au pluriel) 
-    // et non 'prediction.top3_categories'
     if (data.success && data.predictions) {
       predictionResults.value = data.predictions.map((p: any) => ({
         category: p.category,
         confidence: p.confidence
       }));
+      console.log(data)
 
-      // CORRECTION ICI : Accès direct aux clés envoyées par le backend
       recyclingInfo.value = {
-        recyclable: data.recycling_info.binColor !== 'gris', // Logique simple ou utilisez data.success
-        binColor: data.recycling_info.binColor, // Le backend envoie binColor (camelCase)
+        recyclable: data.recycling_info.binColor !== 'gris', 
+        binColor: data.recycling_info.binColor, 
         recommendations: data.recycling_info.recommendations,
         generalClass: data.general_class, 
-        message: data.main_prediction.category // Optionnel
+        message: data.main_prediction.category 
       };
     }
 
