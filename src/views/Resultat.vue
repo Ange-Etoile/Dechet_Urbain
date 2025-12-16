@@ -60,9 +60,9 @@ const handlePhotoTaken = (file) => {
         <div class="flex">
           <CardResult 
             :predictions="store.predictionResults"
-            :generalClass="store.generalClass" 
-            :classProbability="store.classProbability"
-            :isLoading="store.isLoading"
+            :general-class="store.currentGeneralClass" 
+            :class-probability="store.recyclableProbability"
+            :is-loading="store.isLoading"
             :error="store.error"
           />
         </div>

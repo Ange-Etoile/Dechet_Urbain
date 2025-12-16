@@ -79,7 +79,7 @@ const uploadAndPredict = async (fileToUpload: File) => {
         binColor: data.recycling_info.binColor, 
         recommendations: data.recycling_info.recommendations,
         generalClass: data.general_class, 
-        message: data.main_prediction.category 
+        message: data.main_prediction.category
       };
     }
 
