@@ -138,14 +138,14 @@ const formatCategoryName = (category: string) => {
               </div>
               <div>
                 <p class="text-sm text-gray-500">Classification</p>
-                <h2 class="text-xl sm:text-3xl font-bold" :style="{ color: getCategoryConfig(mainCategory.category).color }">
+                <h2 class="text-sm sm:text-3xl font-bold" :style="{ color: getCategoryConfig(mainCategory.category).color }">
                   {{ formatCategoryName(mainCategory.category) }}
                 </h2>
               </div>
             </div>
             <div class="text-right">
               <p class="text-sm text-gray-500">Confiance</p>
-              <p class="text-xl sm:text-3xl font-bold text-[#1C4E3D]">
+              <p class="text-sm sm:text-3xl font-bold text-[#1C4E3D]">
                 {{ Math.round(mainCategory.confidence * 100) }}%
               </p>
             </div>
