@@ -69,26 +69,28 @@ const uploadAndPredict = async (fileToUpload: File) => {
 
     const data = response.data;
 
-    // Mise à jour des prédictions (on garde les noms exacts du backend)
-    predictionResults.value = data.prediction.top3_categories.map((p: any) => ({
-      category: p.category,
-      confidence: p.confidence
-    }));
+    // CORRECTION ICI : Le backend envoie 'predictions' (au pluriel) 
+    // et non 'prediction.top3_categories'
+    if (data.success && data.predictions) {
+      predictionResults.value = data.predictions.map((p: any) => ({
+        category: p.category,
+        confidence: p.confidence
+      }));
 
-    // Mise à jour des infos avec la CLASSE GÉNÉRALE
-    recyclingInfo.value = {
-      recyclable: data.recycling_info.recyclable,
-      binColor: data.recycling_info.bin_color,
-      recommendations: data.recycling_info.recommendations,
-      specialInstructions: data.recycling_info.special_instructions,
-      generalClass: data.recycling_info.general_class, // 'recyclable', 'organique', etc.
-      iconType: data.recycling_info.icon_type,
-      message: data.recycling_info.message
-    };
+      // CORRECTION ICI : Accès direct aux clés envoyées par le backend
+      recyclingInfo.value = {
+        recyclable: data.recycling_info.binColor !== 'gris', // Logique simple ou utilisez data.success
+        binColor: data.recycling_info.binColor, // Le backend envoie binColor (camelCase)
+        recommendations: data.recycling_info.recommendations,
+        generalClass: data.general_class, 
+        message: data.main_prediction.category // Optionnel
+      };
+    }
 
-  } catch (err) {
-    error.value = "Échec de l'analyse.";
-    console.error(err)
+  } catch (err: any) {
+    // Affiche l'erreur réelle dans la console pour débugger
+    console.error("Détails de l'erreur axios:", err.response?.data || err.message);
+    error.value = err.response?.data?.message || "Échec de l'analyse.";
   } finally {
     isLoading.value = false;
   }
