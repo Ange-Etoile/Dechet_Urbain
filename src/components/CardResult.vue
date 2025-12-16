@@ -75,23 +75,19 @@ const classUIConfig = computed(() => {
   };
 
   let key = props.generalClass?.toLowerCase().trim() || 'non-recyclable';
-  
   if (key === 'organic') key = 'organique';
   if (key === 'danger' || key === 'hazardous') key = 'dangerous';
   if (key === 'trash' || key === 'garbage') key = 'non-recyclable';
 
-  if (!configs[key]) {
-    return {
-      title: formatCategoryName(key),
-      icon: SparklesIcon,
-      colorClass: 'text-blue-700',
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-300',
-      progressColor: 'bg-blue-600',
-      iconBoxColor: 'bg-blue-200'
-    };
-  }
-  return configs[key];
+  return configs[key] || {
+    title: formatCategoryName(key),
+    icon: SparklesIcon,
+    colorClass: 'text-blue-700',
+    bgColor: 'bg-blue-50',
+    borderColor: 'border-blue-300',
+    progressColor: 'bg-blue-600',
+    iconBoxColor: 'bg-blue-200'
+  };
 });
 
 // 3. CONFIGURATION DES ICONES DE CATÉGORIES
@@ -123,20 +119,20 @@ const mainCategory = computed(() => sortedPredictions.value.length > 0 ? sortedP
 </script>
 
 <template>
-  <div class="h-auto rounded-xl shadow-lg w-full p-4 sm:p-6 flex flex-col gap-4 items-start bg-[#1C4E3D] transition-all duration-500 min-h-[450px]">
+  <div class="h-auto rounded-xl shadow-lg w-full p-4 sm:p-6 flex flex-col gap-4 items-start bg-[#1C4E3D] transition-all duration-500 min-h-[400px]">
     
-    <div v-if="props.isLoading" class="w-full flex-1 flex flex-col items-center justify-center gap-4 text-white">
+    <div v-if="props.error" class="w-full flex-1 flex flex-col items-center justify-center gap-4 p-6 bg-red-900/20 rounded-xl border border-red-500/30">
+      <ExclamationTriangleIcon class="w-16 h-16 text-red-400" />
+      <h3 class="text-xl font-bold text-red-200">Échec de l'analyse</h3>
+      <p class="text-sm text-red-300/80 text-center bg-red-950/40 p-3 rounded-lg">{{ props.error }}</p>
+    </div>
+
+    <div v-else-if="props.isLoading" class="w-full flex-1 flex flex-col items-center justify-center gap-4 text-white">
       <div class="relative">
         <div class="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
         <SparklesIcon class="w-6 h-6 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
       </div>
       <p class="text-lg font-medium animate-pulse">Analyse de l'image...</p>
-    </div>
-    
-    <div v-else-if="props.error" class="w-full flex-1 flex flex-col items-center justify-center gap-4 p-6 bg-red-900/20 rounded-xl border border-red-500/30">
-      <ExclamationTriangleIcon class="w-16 h-16 text-red-400" />
-      <h3 class="text-xl font-bold text-red-200">Échec de l'analyse</h3>
-      <p class="text-sm text-red-300/80 text-center bg-red-950/40 p-3 rounded-lg">{{ props.error }}</p>
     </div>
 
     <div v-else-if="!mainCategory" class="w-full flex-1 flex flex-col items-center justify-center gap-4 text-white/40 border-2 border-dashed border-white/10 rounded-xl">
@@ -160,7 +156,7 @@ const mainCategory = computed(() => sortedPredictions.value.length > 0 ? sortedP
       <div class="w-full bg-white rounded-xl p-4 shadow-xl border-b-4 border-[#B7D9E4]">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-4">
-            <div class="w-14 h-14 rounded-xl flex items-center justify-center transition-transform hover:scale-110" 
+            <div class="w-14 h-14 rounded-xl flex items-center justify-center" 
                  :style="{ backgroundColor: getCategoryConfig(mainCategory.category).bgColor }">
               <component :is="getCategoryConfig(mainCategory.category).icon" 
                          class="w-8 h-8" 
@@ -184,7 +180,7 @@ const mainCategory = computed(() => sortedPredictions.value.length > 0 ? sortedP
         </div>
       </div>
 
-      <div class="w-full border-2 rounded-xl p-4 shadow-xl transition-all duration-500" 
+      <div class="w-full border-2 rounded-xl p-4 shadow-xl" 
            :class="[classUIConfig.bgColor, classUIConfig.borderColor]">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-4">
@@ -192,7 +188,7 @@ const mainCategory = computed(() => sortedPredictions.value.length > 0 ? sortedP
               <component :is="classUIConfig.icon" class="w-7 h-7" :class="classUIConfig.colorClass" />
             </div>
             <div>
-              <p class="text-[10px] font-black uppercase opacity-60" :class="classUIConfig.colorClass">Consigne de tri</p>
+              <p class="text-[10px] font-black uppercase opacity-60" :class="classUIClass">Consigne</p>
               <h3 class="text-xl font-black" :class="classUIConfig.colorClass">{{ classUIConfig.title }}</h3>
             </div>
           </div>
@@ -202,24 +198,18 @@ const mainCategory = computed(() => sortedPredictions.value.length > 0 ? sortedP
             </p>
           </div>
         </div>
-        <div class="w-full h-2.5 rounded-full bg-white/40 overflow-hidden">
-          <div class="h-full transition-all duration-1000 delay-300 ease-out" 
-               :class="classUIConfig.progressColor"
-               :style="{ width: `${props.classProbability * 100}%` }"></div>
-        </div>
       </div>
 
       <div class="w-full mt-2" v-if="sortedPredictions.length > 1">
         <h3 class="text-xs font-black text-[#B7D9E4] uppercase tracking-widest mb-3 flex items-center gap-2">
           <ArchiveBoxIcon class="w-4 h-4" />
-          Analyses alternatives
+          Probabilités alternatives
         </h3>
         <div class="grid grid-cols-1 gap-2">
           <div v-for="(prediction, index) in sortedPredictions.slice(1, 3)" :key="index" 
-               class="flex items-center justify-between bg-white/5 hover:bg-white/10 p-3 rounded-lg transition-colors border border-white/5">
+               class="flex items-center justify-between bg-white/5 p-3 rounded-lg border border-white/5">
             <div class="flex items-center gap-3">
-              <component :is="getCategoryConfig(prediction.category).icon" 
-                         class="w-4 h-4 text-[#B7D9E4]" />
+              <component :is="getCategoryConfig(prediction.category).icon" class="w-4 h-4 text-[#B7D9E4]" />
               <span class="text-sm font-bold text-white">{{ formatCategoryName(prediction.category) }}</span>
             </div>
             <span class="text-sm font-mono text-[#B7D9E4]">{{ Math.round(prediction.confidence * 100) }}%</span>
