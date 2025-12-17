@@ -35,56 +35,79 @@ const categoryFallbacks: Record<string, any> = {
         recommendations: ['Lancez une analyse pour obtenir des instructions détaillées.'],
         binColor: 'gris',
         icon: InformationCircleIcon,
-        specialInstructions: 'Aucune analyse effectuée.'
-    },
-    'trash': {
-        recommendations: ['Placez dans la poubelle des ordures ménagères', 'Fermez bien le sac'],
-        binColor: 'gris',
-        icon: XCircleIcon,
-        specialInstructions: 'Déchets destinés à l\'incinération'
-    },
-    'paper': {
-        recommendations: ['Propre et sec', 'Aplatissez les cartons'],
-        binColor: 'bleu',
-        icon: CheckCircleIcon
-    },
-    'plastic': {
-        recommendations: ['Rincez le contenant', 'Vérifiez le symbole'],
-        binColor: 'jaune',
-        icon: CheckCircleIcon
-    },
-    'glass': {
-        recommendations: ['Rincez le verre', 'Retirez les bouchons'],
-        binColor: 'vert',
-        icon: CheckCircleIcon
-    },
-    'medical': {
-        recommendations: ['NE PAS jeter avec les ordures', 'Pharmacie uniquement'],
-        binColor: 'rouge',
-        icon: ExclamationTriangleIcon,
-        specialInstructions: 'DANGER - Risque infectieux'
-    },
-    'metal': {
-        recommendations: ['Rincez les boîtes', 'Bac jaune'],
-        binColor: 'jaune',
-        icon: CheckCircleIcon
-    },
-    'e-waste': {
-        recommendations: ['Point de collecte DEEE', 'Ne pas jeter'],
-        binColor: 'rouge',
-        icon: ExclamationTriangleIcon,
-        specialInstructions: 'Substances dangereuses présentes'
-    },
-    'battery waste': {
-        recommendations: ['Bornes de collecte spéciales', 'Protégez les bornes'],
-        binColor: 'rouge',
-        icon: ExclamationTriangleIcon,
-        specialInstructions: 'Risque d\'incendie'
+        specialInstructions: 'Analyse en attente.'
     },
     'food organics': {
-        recommendations: ['Idéal pour compost', 'Bac marron'],
+        recommendations: ['Idéal pour le compostage domestique', 'Ne pas mettre de restes de viande ou de produits laitiers', 'Retirez les éventuels autocollants sur les fruits'],
         binColor: 'marron',
-        icon: CheckBadgeIcon
+        icon: CheckBadgeIcon,
+        specialInstructions: 'VALORISATION - Transformable en engrais naturel pour vos plantes.'
+    },
+    'textile trash': {
+        recommendations: ['Utilisez les bornes de collecte spécialisées (ex: Le Relais)', 'Donnez les vêtements en bon état à des associations', 'Lavez et séchez avant de déposer en borne'],
+        binColor: 'gris',
+        icon: XCircleIcon,
+        specialInstructions: 'RÉEMPLOI - 90% des textiles peuvent être réutilisés ou recyclés en isolant.'
+    },
+    'automobile wastes': {
+        recommendations: ['Dépôt obligatoire en déchèterie ou garage agréé', 'Ne jamais jeter dans les égouts ou canalisations', 'Manipulez avec des gants si possible'],
+        binColor: 'rouge',
+        icon: ExclamationTriangleIcon,
+        specialInstructions: 'DANGER - Les huiles et liquides sont extrêmement toxiques pour l\'eau.'
+    },
+    'battery waste': {
+        recommendations: ['Déposez dans les bornes de collecte en magasin', 'Ne pas jeter dans la poubelle ordinaire', 'Recouvrez les pôles avec du ruban adhésif'],
+        binColor: 'rouge',
+        icon: ExclamationTriangleIcon,
+        specialInstructions: 'RISQUE INCENDIE - Les métaux lourds peuvent contaminer durablement le sol.'
+    },
+    'cardboard': {
+        recommendations: ['Aplatissez les cartons pour optimiser l\'espace', 'Retirez les gros scotchs et agrafes métalliques', 'Le carton doit être sec et sans restes de nourriture'],
+        binColor: 'bleu',
+        icon: CheckCircleIcon,
+        specialInstructions: 'VOLUME - Pensez à plier pour ne pas saturer les bacs de collecte.'
+    },
+    'e-waste': {
+        recommendations: ['Rapportez l\'ancien appareil lors d\'un nouvel achat', 'Déposez en déchèterie dans le bac DEEE', 'Effacez vos données personnelles avant le dépôt'],
+        binColor: 'rouge',
+        icon: ExclamationTriangleIcon,
+        specialInstructions: 'RESSOURCES - Contient des métaux rares récupérables (or, argent, cuivre).'
+    },
+    'glass': {
+        recommendations: ['Retirez les bouchons et capsules en métal', 'Videz bien le contenu, pas besoin de laver', 'Attention : pas de miroirs, ampoules ou vaisselle cassée'],
+        binColor: 'vert',
+        icon: CheckCircleIcon,
+        specialInstructions: 'SÉCURITÉ - Ne mélangez pas le verre culinaire (plats) avec le verre d\'emballage.'
+    },
+    'medical': {
+        recommendations: ['Rapportez les médicaments périmés en pharmacie', 'Utilisez les boîtes jaunes sécurisées pour les aiguilles', 'NE PAS jeter avec les ordures ménagères'],
+        binColor: 'rouge',
+        icon: ExclamationTriangleIcon,
+        specialInstructions: 'DANGER INFECTIEUX - Traitement obligatoire par une filière sécurisée.'
+    },
+    'metal': {
+        recommendations: ['Rincez les boîtes de conserve et canettes', 'Les aérosols vides sont acceptés dans le bac jaune', 'Le métal se recycle à l\'infini sans perte'],
+        binColor: 'jaune',
+        icon: CheckCircleIcon,
+        specialInstructions: 'ÉCONOMIE D\'ÉNERGIE - Recycler l\'aluminium consomme 95% d\'énergie en moins.'
+    },
+    'paper': {
+        recommendations: ['Journaux, magazines et prospectus acceptés', 'Ne pas froisser les feuilles inutilement', 'Retirez les films plastiques des courriers'],
+        binColor: 'bleu',
+        icon: CheckCircleIcon,
+        specialInstructions: 'QUALITÉ - Le papier mouillé ou gras (pizza) ne peut plus être recyclé.'
+    },
+    'plastic': {
+        recommendations: ['Videz bien les bouteilles et flacons', 'Laissez les bouchons vissés sur les bouteilles', 'Inutile de laver, il suffit de bien vider'],
+        binColor: 'jaune',
+        icon: CheckCircleIcon,
+        specialInstructions: 'TRI SIMPLIFIÉ - Désormais, tous les emballages plastiques se trient.'
+    },
+    'trash': {
+        recommendations: ['Utilisez pour les déchets non recyclables souillés', 'Fermez hermétiquement le sac poubelle', 'Évitez de jeter des objets tranchants sans protection'],
+        binColor: 'gris',
+        icon: XCircleIcon,
+        specialInstructions: 'DÉCHET FINAL - Ce qui est jeté ici sera brûlé ou enterré.'
     }
 };
 
