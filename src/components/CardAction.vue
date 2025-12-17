@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { ref, onUnmounted } from 'vue';
-import { CameraIcon, VideoCameraIcon, XMarkIcon, ArrowPathIcon } from '@heroicons/vue/24/outline';
+import { CameraIcon, XMarkIcon, ArrowPathIcon } from '@heroicons/vue/24/outline';
 
 const emit = defineEmits<{
   (e: 'photoTaken', file: File): void;
-  (e: 'videoStarted'): void;
-  (e: 'videoStopped'): void;
 }>();
 
 const videoElement = ref<HTMLVideoElement | null>(null);
@@ -13,40 +11,35 @@ const canvasElement = ref<HTMLCanvasElement | null>(null);
 const stream = ref<MediaStream | null>(null);
 const capturedImage = ref<string | null>(null);
 const isStreaming = ref(false);
-const isVideoMode = ref(false);
 const error = ref<string | null>(null);
-const facingMode = ref<'user' | 'environment'>('environment'); // 'environment' pour caméra arrière
+const facingMode = ref<'user' | 'environment'>('environment');
 
 // Démarrer la caméra
-const startCamera = async (videoMode = false) => {
+const startCamera = async () => {
   try {
     error.value = null;
-    isVideoMode.value = videoMode;
     
-    // Demander l'accès à la caméra
+    // Contraintes optimisées pour mobile
     const constraints = {
       video: {
         facingMode: facingMode.value,
-        width: { ideal: 1920 },
-        height: { ideal: 1080 }
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
       },
-      audio: videoMode // Audio seulement pour le mode vidéo
+      audio: false // Désactivé car non nécessaire pour la photo
     };
     
-    stream.value = await navigator.mediaDevices.getUserMedia(constraints);
+    const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+    stream.value = mediaStream;
     
     if (videoElement.value) {
-      videoElement.value.srcObject = stream.value;
-      await videoElement.value.play();
+      videoElement.value.srcObject = mediaStream;
+      // Important pour mobile : playsinline est déjà dans le template
       isStreaming.value = true;
-      
-      if (videoMode) {
-        emit('videoStarted');
-      }
     }
   } catch (err) {
     console.error('Erreur accès caméra:', err);
-    error.value = 'Impossible d\'accéder à la caméra. Veuillez vérifier les permissions.';
+    error.value = "L'accès à la caméra a été refusé ou n'est pas disponible sur ce navigateur (vérifiez que vous êtes en HTTPS).";
   }
 };
 
@@ -57,8 +50,6 @@ const stopCamera = () => {
     stream.value = null;
   }
   isStreaming.value = false;
-  isVideoMode.value = false;
-  emit('videoStopped');
 };
 
 // Prendre une photo
@@ -68,163 +59,122 @@ const takePhoto = () => {
   const video = videoElement.value;
   const canvas = canvasElement.value;
   
-  // Définir les dimensions du canvas
+  // Utiliser les dimensions réelles du flux vidéo
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
   
-  // Dessiner l'image actuelle de la vidéo sur le canvas
   const context = canvas.getContext('2d');
   if (context) {
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
     
-    // Convertir en blob puis en file
     canvas.toBlob((blob) => {
       if (blob) {
-        const file = new File([blob], `photo-${Date.now()}.jpg`, { type: 'image/jpeg' });
+        const file = new File([blob], `waste-${Date.now()}.jpg`, { type: 'image/jpeg' });
         capturedImage.value = canvas.toDataURL('image/jpeg');
         stopCamera();
         emit('photoTaken', file);
       }
-    }, 'image/jpeg', 0.95);
+    }, 'image/jpeg', 0.90);
   }
 };
 
-// Changer de caméra (avant/arrière)
+// Switch Caméra
 const switchCamera = async () => {
   facingMode.value = facingMode.value === 'user' ? 'environment' : 'user';
   if (isStreaming.value) {
     stopCamera();
-    await startCamera(isVideoMode.value);
+    await startCamera();
   }
 };
 
-// Retourner en arrière
-const goBack = () => {
+const reset = () => {
   stopCamera();
   capturedImage.value = null;
   error.value = null;
 };
 
-// Nettoyer au démontage du composant
 onUnmounted(() => {
   stopCamera();
 });
 </script>
 
 <template>
-  <div class="h-auto w-full flex flex-col gap-4 rounded-xl shadow-lg bg-white p-4 sm:p-6">
+  <div class="h-auto w-full flex flex-col gap-4 rounded-xl shadow-lg bg-white p-4 sm:p-6 border border-gray-100">
     <div class="flex items-center justify-between">
-      <h1 class="text-lg sm:text-xl font-bold text-gray-800">Utilisez votre caméra</h1>
+      <div class="flex items-center gap-2">
+        <CameraIcon class="w-6 h-6 text-[#1C4E3D]" />
+        <h1 class="text-lg font-bold text-gray-800">Appareil photo</h1>
+      </div>
       <button 
         v-if="isStreaming"
         @click="switchCamera"
-        class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
-        title="Changer de caméra"
+        class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
       >
         <ArrowPathIcon class="w-5 h-5 text-gray-700" />
       </button>
     </div>
     
-    <!-- Message d'erreur -->
-    <div v-if="error" class="w-full p-3 bg-red-50 border border-red-200 rounded-lg">
-      <p class="text-sm text-red-600">{{ error }}</p>
+    <div v-if="error" class="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+      {{ error }}
     </div>
     
-    <!-- Zone de prévisualisation caméra -->
-    <div 
-      v-if="isStreaming" 
-      class="relative w-full aspect-video bg-black rounded-lg overflow-hidden"
-    >
+    <div v-if="isStreaming" class="relative w-full aspect-square sm:aspect-video bg-black rounded-xl overflow-hidden shadow-inner">
       <video 
         ref="videoElement" 
         autoplay 
+        muted
         playsinline
         class="w-full h-full object-cover"
       ></video>
       
-      <!-- Overlay pour mode vidéo -->
-      <div v-if="isVideoMode" class="absolute top-4 left-4 px-3 py-1 bg-red-600 rounded-full flex items-center gap-2">
-        <span class="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-        <span class="text-white text-sm font-semibold">EN DIRECT</span>
-      </div>
-      
-      <!-- Boutons de contrôle -->
-      <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-4 px-4">
+      <div class="absolute bottom-6 left-0 right-0 flex justify-center items-center gap-6">
         <button
-          v-if="!isVideoMode"
-          @click="takePhoto"
-          class="w-16 h-16 rounded-full bg-white hover:bg-gray-100 border-4 border-[#1C4E3D] transition-all hover:scale-110 flex items-center justify-center shadow-lg"
-        >
-          <CameraIcon class="w-7 h-7 text-[#1C4E3D]" />
-        </button>
-        
-        <button
-          @click="goBack"
-          class="w-12 h-12 rounded-full bg-red-500 hover:bg-red-600 transition-colors flex items-center justify-center shadow-lg"
+          @click="reset"
+          class="w-12 h-12 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center border border-white/30"
         >
           <XMarkIcon class="w-6 h-6 text-white" />
         </button>
+
+        <button
+          @click="takePhoto"
+          class="w-20 h-20 rounded-full border-4 border-white flex items-center justify-center bg-[#1C4E3D] shadow-2xl active:scale-90 transition-transform"
+        >
+          <div class="w-16 h-16 rounded-full border-2 border-white/20"></div>
+        </button>
+        
+        <div class="w-12"></div> </div>
+    </div>
+    
+    <div v-else-if="capturedImage" class="relative w-full aspect-square sm:aspect-video bg-gray-100 rounded-xl overflow-hidden border">
+      <img :src="capturedImage" class="w-full h-full object-contain" />
+      <button
+        @click="reset"
+        class="absolute top-4 right-4 p-2 rounded-full bg-red-500 text-white shadow-lg"
+      >
+        <XMarkIcon class="w-6 h-6" />
+      </button>
+      <div class="absolute bottom-4 left-0 right-0 text-center">
+        <span class="px-4 py-2 bg-white/90 backdrop-blur rounded-full text-xs font-bold text-[#1C4E3D] shadow-md">
+          PHOTO ANALYSÉE
+        </span>
       </div>
     </div>
     
-    <!-- Image capturée -->
-    <div v-else-if="capturedImage" class="relative w-full aspect-video bg-gray-100 rounded-lg overflow-hidden">
-      <img :src="capturedImage" alt="Photo capturée" class="w-full h-full object-contain" />
-      
-      <button
-        @click="goBack"
-        class="absolute top-4 right-4 w-10 h-10 rounded-full bg-red-500 hover:bg-red-600 transition-colors flex items-center justify-center shadow-lg"
-      >
-        <XMarkIcon class="w-5 h-5 text-white" />
-      </button>
-      
-      <div class="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg p-3">
-        <p class="text-sm font-medium text-gray-800">Photo capturée avec succès !</p>
+    <div v-else class="flex flex-col items-center justify-center py-10 border-2 border-dashed border-gray-200 rounded-xl">
+      <div class="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-4">
+        <CameraIcon class="w-10 h-10 text-[#1C4E3D]" />
       </div>
-    </div>
-    
-    <!-- Boutons d'action initiaux -->
-    <div v-else class="flex flex-col sm:flex-row items-center w-full gap-3">
-      <button
-        @click="startCamera(false)"
-        class="flex items-center w-full justify-center gap-2 p-3 sm:p-3.5 rounded-lg bg-[#1C4E3D] hover:bg-[#2a6b56] transition-all duration-200 hover:shadow-md active:scale-95"
-      >
-        <CameraIcon class="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-        <span class="text-white font-medium text-sm sm:text-base">Prendre une photo</span>
-      </button>
-      
-      <button
-        @click="startCamera(true)"
-        class="flex items-center w-full justify-center gap-2 p-3 sm:p-3.5 rounded-lg bg-[#1C4E3D] hover:bg-[#2a6b56] transition-all duration-200 hover:shadow-md active:scale-95"
-      >
-        <VideoCameraIcon class="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-        <span class="text-white font-medium text-sm sm:text-base">Détecter en vidéo</span>
-      </button>
-    </div>
-    
-    <!-- Canvas caché pour la capture -->
-    <canvas ref="canvasElement" class="hidden"></canvas>
-    
-    <!-- Info supplémentaire -->
-    <div v-if="!isStreaming && !capturedImage" class="w-full p-3 bg-blue-50 border border-blue-200 rounded-lg">
-      <p class="text-xs sm:text-sm text-blue-700">
-        <span class="font-semibold">Astuce :</span> Assurez-vous d'autoriser l'accès à la caméra dans votre navigateur.
+      <p class="text-gray-500 text-sm mb-6 text-center px-4">
+        Prenez une photo claire du déchet pour une meilleure détection
       </p>
+      <button
+        @click="startCamera"
+        class="px-8 py-3 bg-[#1C4E3D] text-white rounded-full font-bold shadow-lg hover:bg-[#256650] transition-all active:scale-95"
+      >
+        Ouvrir l'appareil photo
+      </button>
     </div>
+
+    <canvas ref="canvasElement" class="hidden"></canvas>
   </div>
 </template>
-
-<style scoped>
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-</style>

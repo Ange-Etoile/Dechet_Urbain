@@ -81,7 +81,7 @@ const categoryFallbacks: Record<string, any> = {
         icon: ExclamationTriangleIcon,
         specialInstructions: 'Risque d\'incendie'
     },
-    'food organic': {
+    'food organics': {
         recommendations: ['Idéal pour compost', 'Bac marron'],
         binColor: 'marron',
         icon: CheckBadgeIcon
