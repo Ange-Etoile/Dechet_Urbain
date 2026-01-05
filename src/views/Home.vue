@@ -45,9 +45,9 @@ const features = [
 ];
 
 const stats = [
-  { value: '95%', label: 'Précision' },
+  { value: '85%', label: 'Précision' },
   { value: '12', label: 'Catégories' },
-  { value: '<2s', label: 'Temps réel' }
+  { value: '<5s', label: 'Temps réel' }
 ];
 </script>
 
