@@ -19,13 +19,13 @@ const facingMode = ref<'user' | 'environment'>('environment');
 const startCamera = async () => {
   try {
     error.value = null;
-    isStreaming.value = true; // On affiche l'élément vidéo avant de chercher le flux
+    isStreaming.value = true; 
     
-    await nextTick(); // On attend que le DOM affiche le <video>
+    await nextTick(); 
 
     const constraints = {
       video: {
-        facingMode: facingMode.value, // Retrait de "exact" pour plus de compatibilité
+        facingMode: facingMode.value, 
         width: { ideal: 1280 },
         height: { ideal: 720 }
       },

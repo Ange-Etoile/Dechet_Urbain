@@ -204,7 +204,7 @@ const getBinColorClass = (color: string) => {
                 </div>
             </div>
 
-            <div class="w-full flex justify-between items-center bg-white rounded-lg p-3 shadow-sm">
+            <!-- <div class="w-full flex justify-between items-center bg-white rounded-lg p-3 shadow-sm">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-full flex-shrink-0" :class="getBinColorClass(currentConfig.binColor)"></div>
                     <div>
@@ -216,7 +216,7 @@ const getBinColorClass = (color: string) => {
                     <MapPinIcon class="w-5 h-5 text-gray-500 mb-1 ml-auto" />
                     <p class="text-xs text-gray-500 font-semibold">{{ nearestLocation }}</p>
                 </div>
-            </div>
+            </div> -->
 
             <div v-if="currentConfig.specialInstructions && props.generalClass !== 'recyclable'" class="flex items-start gap-2 p-3 bg-red-50 border-2 border-red-300 rounded-lg">
                 <ExclamationTriangleIcon class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />

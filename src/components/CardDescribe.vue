@@ -22,7 +22,7 @@ import {
         <h2 class="text-2xl sm:text-3xl font-bold text-gray-800">Comment ça marche ?</h2>
         <p class="text-sm sm:text-base text-gray-600 leading-relaxed">
           Notre application utilise l'intelligence artificielle pour identifier et classer automatiquement vos déchets.
-          Prenez simplement une photo ou téléchargez une image de votre déchet, et notre système vous indiquera dans quelle catégorie il appartient.
+          Prenez simplement une photo ou téléversez une image de votre déchet, et notre système vous indiquera dans quelle catégorie il appartient.
         </p>
       </div>
       
@@ -36,38 +36,22 @@ import {
             </div>
             <div class="flex items-center gap-2">
               <span class="text-xs font-bold text-blue-600 bg-blue-200 px-2 py-1 rounded-full">1</span>
-              <h3 class="text-base sm:text-lg font-bold text-gray-800">Télécharger</h3>
+              <h3 class="text-base sm:text-lg font-bold text-gray-800">Téléverser ou Photographier </h3>
             </div>
           </div>
           <p class="text-xs sm:text-sm text-gray-600 leading-relaxed">
-            Glissez-déposez une image ou vidéo de votre déchet
+            Glissez-déposez ou utilisez votre caméra pour capturer  une image ou de votre déchet
           </p>
         </div>
         
-        <!-- Étape 2: Photographier -->
-        <div class="flex flex-col gap-3 p-4 rounded-lg bg-gradient-to-br from-purple-50 to-purple-100/50 hover:shadow-md transition-all duration-300 group">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-purple-500 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-              <CameraIcon class="w-5 h-5 text-white" />
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-purple-600 bg-purple-200 px-2 py-1 rounded-full">2</span>
-              <h3 class="text-base sm:text-lg font-bold text-gray-800">Photographier</h3>
-            </div>
-          </div>
-          <p class="text-xs sm:text-sm text-gray-600 leading-relaxed">
-            Utilisez votre caméra pour capturer une image en temps réel
-          </p>
-        </div>
-        
-        <!-- Étape 3: Analyser -->
+        <!-- Étape 2: Analyser -->
         <div class="flex flex-col gap-3 p-4 rounded-lg bg-gradient-to-br from-green-50 to-green-100/50 hover:shadow-md transition-all duration-300 group">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
               <SparklesIcon class="w-5 h-5 text-white" />
             </div>
             <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-green-600 bg-green-200 px-2 py-1 rounded-full">3</span>
+              <span class="text-xs font-bold text-green-600 bg-green-200 px-2 py-1 rounded-full">2</span>
               <h3 class="text-base sm:text-lg font-bold text-gray-800">Analyser</h3>
             </div>
           </div>
