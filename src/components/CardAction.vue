@@ -156,7 +156,7 @@ onUnmounted(() => stopCamera());
       
       <button @click="openNativeCamera" class="flex items-center justify-center gap-3 bg-gray-100 text-gray-700 py-4 rounded-xl font-bold">
         <PhotoIcon class="w-6 h-6" />
-        Photo Système / Galerie
+        Photo Système
       </button>
     </div>
 

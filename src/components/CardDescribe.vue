@@ -40,7 +40,7 @@ import {
             </div>
           </div>
           <p class="text-xs sm:text-sm text-gray-600 leading-relaxed">
-            Glissez-déposez ou utilisez votre caméra pour capturer  une image ou de votre déchet
+            Glissez-déposez ou utilisez votre caméra pour capturer  une image  de votre déchet
           </p>
         </div>
         
@@ -67,7 +67,7 @@ import {
               <RectangleStackIcon class="w-5 h-5 text-white" />
             </div>
             <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-orange-600 bg-orange-200 px-2 py-1 rounded-full">4</span>
+              <span class="text-xs font-bold text-orange-600 bg-orange-200 px-2 py-1 rounded-full">3</span>
               <h3 class="text-base sm:text-lg font-bold text-gray-800">Trier</h3>
             </div>
           </div>
